@@ -26,15 +26,23 @@ end
 
 contributors = Octokit.contribs(repo_name)
 logins = contributors.map(&:login)
+
 locations = Parallel.map(logins) {
     |login| Octokit.user(login).location
-}.reject(&:nil?)
-coordinates = Parallel.map(locations) {
+}
+valid_locations = locations.reject(&:nil?)
+STDERR.puts "#{locations.length - valid_locations.length} users have not specified their location"
+STDERR.flush
+
+coordinates = Parallel.map(valid_locations) {
     |location| Geocoder.coordinates(location)
-}.reject(&:nil?)
+}
+valid_coordinates = coordinates.reject(&:nil?)
+STDERR.puts "#{coordinates.length - valid_coordinates.length} locations could not be geocoded"
+
 puts JSON.pretty_generate({
     :type => "FeatureCollection",
-    :features => coordinates.map { |coordinates|
+    :features => valid_coordinates.map { |coordinates|
         {
             :type => "Feature",
             :geometry => {
