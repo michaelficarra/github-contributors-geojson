@@ -19,19 +19,19 @@ if github_id.nil? || client_id.nil? || client_secret.nil?
     Kernel.exit(1)
 end
 
+Geocoder.configure(:lookup => :yandex)
+Octokit.auto_paginate = true
+Octokit.configure do |c|
+    c.client_id = client_id
+    c.client_secret = client_secret
+end
+
 org_name = github_id[1]
 repo_name = github_id[2]
 repositories = if repo_name.nil?
     Octokit.repositories(org_name).map(&:full_name)
 else
     [github_id]
-end
-
-Geocoder.configure(:lookup => :yandex)
-Octokit.auto_paginate = true
-Octokit.configure do |c|
-    c.client_id = client_id
-    c.client_secret = client_secret
 end
 
 contributors = Parallel.map(repositories) { |repo_name|
