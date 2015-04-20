@@ -43,10 +43,10 @@ valid_locations = locations.reject(&:nil?)
 STDERR.puts "#{locations.length - valid_locations.length} users have not specified their location"
 STDERR.flush
 
-coordinates = Parallel.map(valid_locations) {
+coordinates = Parallel.map(valid_locations.sort.uniq) {
     |location| Geocoder.coordinates(location)
 }
-valid_coordinates = coordinates.reject(&:nil?)
+valid_coordinates = coordinates.reject(&:nil?).sort.uniq
 STDERR.puts "#{coordinates.length - valid_coordinates.length} locations could not be geocoded"
 
 puts JSON.pretty_generate({
